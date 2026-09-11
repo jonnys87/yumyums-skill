@@ -17,6 +17,17 @@ it is why sending a recipe that might have a mistake in it is fine.
 
 This skill is the tool that builds that file and gets it to them.
 
+## Installing this skill
+
+If you are reading this on GitHub rather than from an installed copy: clone
+this repository into wherever you keep skills (Claude Code `~/.claude/skills/`,
+an OpenClaw workspace's `skills/`, or anywhere at all for Codex with the
+`AGENTS.md` snippet in `agents/codex.md`), as a folder named `yumyums`. Python
+3.11 or newer is the only requirement. Then ask the person once how the file
+should reach their phone (Messages, Telegram, or a file you hand over yourself)
+and put the answer in `~/.config/yumyums/config.json`, copied from
+`config.example.json`. Never invent a recipient.
+
 ## When to use it
 
 Any time a recipe should end up in the app. A link they shared, a recipe they

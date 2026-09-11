@@ -1,205 +1,72 @@
-# yumyums-send
+# yumyums-skill
 
-Turns a recipe link, or a lump of pasted recipe text, into a `.yumyums` file and
-gets it to your phone. Tapping the file opens YumYums on its review screen, with
-the recipe filled in and nothing saved until you say so.
+Give your AI assistant this page and say:
 
-This is the "send a link to your assistant and say add this to my app" path for
-YumYums. An agent can run it, and so can you. It is also a working reference for
-the file format, which is written up in [FORMAT.md](FORMAT.md) so that an
-assistant which cannot run Python can still produce a file the app will open.
+> Install the yumyums skill.
 
-## What you need
+That is the setup. The assistant reads this page, installs the skill for itself,
+asks you once how to reach your phone, and from then on "add this recipe to my
+app" does what it says. The recipe arrives on your phone as a small file, you
+tap it, YumYums opens it on the review screen with the ingredients, method and
+photo filled in, and you save it. Nothing is saved until you have looked at it.
 
-Python 3.11 or newer. That is the whole list: standard library only, no pip
-dependencies, nothing to compile.
+It works with any assistant that can run a command: Claude Code, Codex, OpenClaw
+and their like. An assistant that cannot run commands can still write the file,
+because the format is documented in [FORMAT.md](FORMAT.md).
 
-## Install
+## What YumYums is
 
-With [pipx](https://pipx.pypa.io), which puts `yumyums-send` on your PATH in its
-own environment:
+A recipe app for iPhone and iPad that keeps every recipe on your own device: no
+account, no subscription, no server. This skill is the way an assistant puts a
+recipe into it. See [the YumYums site](https://jonnys87.github.io/yumyums-site/).
+
+## For the assistant reading this
+
+Four steps, then you are done.
+
+1. Find where you keep skills. Claude Code: `~/.claude/skills/`. OpenClaw: the
+   `skills/` folder of your workspace. Codex: clone it anywhere and add the
+   snippet in [agents/codex.md](agents/codex.md) to your `AGENTS.md`. Anything
+   else: clone it anywhere and read `SKILL.md` whenever a recipe comes up.
+2. Clone this repository into that place, as a folder called `yumyums`:
+
+   ```bash
+   git clone https://github.com/jonnys87/yumyums-skill.git yumyums
+   ```
+
+   It needs Python 3.11 or newer and nothing else. No pip, no build.
+3. Ask the person one question: how should the file reach their phone? The
+   choices are Messages (a Mac signed in to iMessage, plus their phone number
+   or Apple account address), Telegram (a bot token and a chat id), or a file
+   you hand over through your own channel. Put the answer in
+   `~/.config/yumyums/config.json` (copy `config.example.json`) or in the
+   environment. Never invent a recipient: with nothing configured the tool
+   refuses and says which setting is missing, and that is the correct
+   behaviour.
+4. Read [SKILL.md](SKILL.md). Then tell the person to send you a recipe link.
+
+## Doing it by hand
+
+No assistant needed. Clone it and run one command:
 
 ```bash
 git clone https://github.com/jonnys87/yumyums-skill.git
-cd yumyums-skill
-pipx install .
+python3 yumyums-skill/yumyums_send.py "https://example.com/recipes/butter-bean-stew" --out ~/Desktop/
 ```
 
-Or do not install it at all. The script runs from a clone as it stands:
+Then AirDrop the file to your phone and tap it. Or send it straight there:
 
 ```bash
-python3 /path/to/yumyums-skill/yumyums_send.py --help
+python3 yumyums-skill/yumyums_send.py "https://example.com/recipes/butter-bean-stew" --via messages --to "+15555550123"
 ```
 
-## Use
+## Everything else
 
-```
-yumyums-send <url-or-text> [--via messages|telegram|email] [--out path]
-```
+- [docs/REFERENCE.md](docs/REFERENCE.md): every flag, the three delivery
+  methods, the settings, what the tool sends where, tests, known limits.
+- [FORMAT.md](FORMAT.md): the `.yumyums` file format, for writing the file
+  without this tool.
+- [agents/](agents/): notes for Claude Code, OpenClaw, Codex, and assistants
+  that cannot run commands.
 
-A recipe link:
-
-```bash
-yumyums-send "https://example.com/recipes/butter-bean-stew" --via messages
-```
-
-Pasted text, as an argument or on standard input. Use standard input for
-anything longer than a line or two:
-
-```bash
-pbpaste | yumyums-send - --via telegram
-```
-
-Just the file, to deliver however you like:
-
-```bash
-yumyums-send "https://example.com/recipes/stew" --out ~/Desktop/
-```
-
-A path ending in a slash, or one that is already a folder, means a folder to put
-the file in, named the way the app names it, for example
-`Butter bean stew.yumyums`.
-
-The rest of the flags:
-
-```
---dry-run    say exactly what would happen, do nothing
---json       report as JSON, for a program reading the output
---title      use this title instead of the one found
---photo      put a local image inside the file
---to         who to send it to, for Messages and for email
-```
-
-## The three ways to deliver
-
-Nothing is sent unless you ask for it. With neither `--via` nor `--out` the tool
-refuses to run, and there is no built-in recipient of any kind: no number, no
-address, no token. Everything comes from your own configuration.
-
-### A file (`--out`)
-
-Always available, nothing to configure. Write the file and AirDrop it, attach
-it, drop it in iCloud Drive, whatever suits.
-
-### Messages (`--via messages --to <recipient>`)
-
-A Mac talking to the Messages app over AppleScript, which sends the file to your
-phone as an iMessage. Needs macOS, a Mac signed in to iMessage, and a recipient:
-a phone number or an Apple account address, either on the command line as `--to`
-or in your config as `messages_to`. The first run asks for permission to control
-Messages.
-
-### Telegram (`--via telegram`)
-
-Uploads the file to a chat through a bot you made with
-[@BotFather](https://t.me/botfather). Needs a bot token and a chat id. Works on
-any machine with a network connection, which is the reason it exists.
-
-### Email (`--via email`)
-
-Attaches the file to a mail and sends it, either through an SMTP server you name
-or through the machine's own `sendmail` if it has one. Needs a from address and
-a to address. Whether the attachment survives to be tappable depends on the mail
-client at the other end, so if you have a choice, Messages or Telegram is the
-surer route.
-
-## Configuration
-
-Settings come from the environment first, then from
-`~/.config/yumyums/config.json`, and there are no defaults. Every setting is
-`YUMYUMS_<NAME>` in the environment and `<name>` in the file.
-
-Copy [`config.example.json`](config.example.json) and keep only the lines you
-need:
-
-```bash
-mkdir -p ~/.config/yumyums
-cp config.example.json ~/.config/yumyums/config.json
-chmod 600 ~/.config/yumyums/config.json
-```
-
-| Setting | Used by | What it is |
-| --- | --- | --- |
-| `messages_to` | Messages | Phone number or Apple account address to send to |
-| `telegram_token` | Telegram | Bot token from BotFather |
-| `telegram_chat_id` | Telegram | The chat to put the file in |
-| `email_to` | email | Address to send to |
-| `email_from` | email | Address to send from |
-| `email_smtp_host` | email | Mail server. Leave it out to use local `sendmail` |
-| `email_smtp_port` | email | Defaults to 587, or 465 with `ssl` |
-| `email_smtp_security` | email | `starttls` (default), `ssl` or `none` |
-| `email_smtp_user` | email | Username, if the server wants one |
-| `email_smtp_password` | email | Password or app password |
-| `email_sendmail` | email | Path to a `sendmail` binary, if it is somewhere unusual |
-
-`config.json` is in `.gitignore`. Keep it that way. If you can use an app
-password rather than your real one, use the app password.
-
-## Privacy
-
-Nothing about a recipe leaves your machine except the two things you asked for:
-
-- The page you gave it is fetched, over HTTPS, by this tool on your machine. The
-  site sees a request for the page, which is what happens when you open a link.
-- The file goes wherever you pointed it. Messages sends it through Apple, as any
-  iMessage goes. Telegram uploads it to Telegram's API. Email hands it to your
-  mail server. `--out` sends it nowhere at all.
-
-There is no analytics, no telemetry, no third-party service in the middle, and
-no model call. Recipe reading is structured data and plain string handling, done
-here. Your configuration is read from your own machine and nothing writes to it.
-
-## How a page is read
-
-If the page carries JSON-LD, which most recipe sites do, the recipe comes out
-structured: title, ingredients split into amount, unit and item, steps, times,
-servings, tags and the photo link.
-
-If it does not, the tool does not guess. The readable page text goes into the
-recipe's notes, the recipe is tagged `AI read`, and the app's own on-device
-import reads it, which it is better at than a pile of CSS selectors would be.
-Pasted text gets a plain heuristic: first line is the title, a Method or
-Instructions heading splits ingredients from steps, and lines with a quantity in
-them are the ingredients.
-
-Both of those are marked `"reviewed": false` in the file, and the app's review
-screen is where anything wrong gets fixed before it is saved.
-
-## Using it from your assistant
-
-`SKILL.md` at the root of this repository is written for an agent reading it
-cold: what the app is, when to reach for the tool, the three commands, what the
-output means, and the rules. Point your assistant at it, however your assistant
-takes instructions.
-
-- [Claude Code](agents/claude-code.md)
-- [OpenClaw](agents/openclaw.md)
-- [Codex](agents/codex.md)
-- [ChatGPT and anything else](agents/chatgpt-and-others.md)
-
-## Tests
-
-```bash
-python3 -m unittest
-```
-
-They cover the JSON-LD path, the page-text fallback, the pasted-text heuristic,
-the manifest and recipe keys exactly as the app reads them, the filename rules,
-and the promise that nothing is delivered without a delivery method. Set
-`YUMYUMS_APP_PATH` to a checkout of the app and one more test joins in,
-comparing what this writes against the app's own test fixture.
-
-## Known limits
-
-- Some sites answer a plain HTTP client with a block page rather than the
-  recipe. There is no browser here to get past that. Copy the recipe text and
-  paste it in instead.
-- A page with no JSON-LD arrives as text for the app to read, not as parsed
-  ingredients. That is deliberate.
-- The photo is normally left as a link for the phone to fetch. `--photo` embeds
-  a local image when there is a reason to.
-- Messages delivery is macOS only, and needs the Mac awake and signed in.
-
-## Licence
-
-MIT. See [LICENSE](LICENSE).
+MIT licence. See [LICENSE](LICENSE).
