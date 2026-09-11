@@ -399,11 +399,20 @@ class NothingIsSentWithoutADeliveryTests(unittest.TestCase):
         self.assertEqual([path.name for path in written], ["Weeknight dal.yumyums"])
 
     def test_messages_without_a_recipient_is_refused(self):
-        with self.assertRaises(yumyums_send.SendError) as raised:
-            yumyums_send.send_via_messages(
-                Path("/tmp/nothing.yumyums"), {}, to="", dry_run=True
-            )
+        with mock.patch.object(sys, "platform", "darwin"):
+            with self.assertRaises(yumyums_send.SendError) as raised:
+                yumyums_send.send_via_messages(
+                    Path("/tmp/nothing.yumyums"), {}, to="", dry_run=True
+                )
         self.assertIn("messages_to", str(raised.exception))
+
+    def test_messages_says_so_when_this_is_not_a_mac(self):
+        with mock.patch.object(sys, "platform", "linux"):
+            with self.assertRaises(yumyums_send.SendError) as raised:
+                yumyums_send.send_via_messages(
+                    Path("/tmp/nothing.yumyums"), {"messages_to": "friend"}, to="", dry_run=True
+                )
+        self.assertIn("not a Mac", str(raised.exception))
 
     def test_telegram_without_credentials_is_refused(self):
         with self.assertRaises(yumyums_send.SendError) as raised:

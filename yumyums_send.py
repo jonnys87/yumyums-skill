@@ -168,17 +168,19 @@ def check_script(script: str) -> None:
 
 
 def send_via_messages(path: Path, config: dict[str, Any], to: str, dry_run: bool) -> str:
+    # The platform first, because telling somebody on a Linux box to go and set
+    # a recipient sends them down a road that ends in a wall.
+    if sys.platform != "darwin":
+        raise SendError(
+            "Messages delivery is a Mac talking to the Messages app, and this is "
+            "not a Mac. Use --via telegram, --via email, or --out."
+        )
     recipient = to or setting("messages_to", config)
     if not recipient:
         raise missing(
             "A Messages recipient (a phone number or an Apple account address)",
             ["messages_to"],
             ["messages_to"],
-        )
-    if sys.platform != "darwin":
-        raise SendError(
-            "Messages delivery is a Mac talking to the Messages app, and this is "
-            "not a Mac. Use --via telegram, --via email, or --out."
         )
     script = messages_script(path, recipient)
     check_script(script)
