@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.DS_Store
+.venv/
+build/
+dist/
+*.egg-info/
+
+# Never the real one. config.example.json is the committed template.
+config.json
+*.yumyums

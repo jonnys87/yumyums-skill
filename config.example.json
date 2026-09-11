@@ -1,0 +1,14 @@
+{
+  "messages_to": "+15555550123",
+
+  "telegram_token": "123456789:replace-with-your-bot-token",
+  "telegram_chat_id": "987654321",
+
+  "email_to": "you@example.com",
+  "email_from": "you@example.com",
+  "email_smtp_host": "smtp.example.com",
+  "email_smtp_port": "587",
+  "email_smtp_security": "starttls",
+  "email_smtp_user": "you@example.com",
+  "email_smtp_password": "replace-with-an-app-password"
+}

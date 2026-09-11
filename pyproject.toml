@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yumyums-send"
+version = "1.0.0"
+description = "Turn a recipe link or pasted recipe text into a .yumyums file for the YumYums app"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+keywords = ["recipe", "yumyums", "agent", "skill"]
+
+[project.scripts]
+yumyums-send = "yumyums_send:main"
+
+[tool.setuptools]
+py-modules = ["yumyums_send", "recipe_file", "normalizer"]
